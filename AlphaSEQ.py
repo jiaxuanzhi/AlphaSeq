@@ -16,6 +16,8 @@ args = Dotdict({
         'lpos': 5, # number of positions filled in each time step
         'M': 3, # feature planes
         'Q': 2, # 2 for binary sequence
+        'lr': 0.0001, # learning rate
+        'tau': 0.1, # temperature parameter for MCTS
         'alpha': 0.05, # exploration noise, i.e., \alpha in the paper
         'simBudget': 900, # MCTS simulation budget
         'eval_games': 50,
@@ -51,7 +53,7 @@ worstMetric = 0
 bestMetric = 15
 
 ######## reward definition - complementary code
-# def calc_reward(currentState):
+def calc_reward(currentState):
     # Code set
     NN = args.N
 
@@ -197,22 +199,22 @@ def main():
     memoryBuffer = deque(maxlen = memorySize)
 
     # load/save latest structure
-    DNN.loadParams('./bestParams/net_params.ckpt')
-    # DNN.saveParams('./bestParams/net_params.ckpt')
+    # DNN.loadParams('./bestParams/net_params.ckpt')
+    DNN.saveParams('./bestParams/net_params.ckpt')
 
     # performance of current DNN
     DNNplayer, DNNmin = DNN_play(n_games = 100, evaluating_fn = DNN.evaluate_node)
     meanCorr = evaluate_DNN(n_games = args.eval_games, tau = 0, evaluating_fn = DNN.evaluate_node)
     
     if args.recordState == 1:
-    	f = open('Record.txt', 'w')
-    	f.write(str(0)+" "+str(DNNplayer)+" "+str(meanCorr)+" "+str(DNNmin)+" "+str(0) + " " + str(0) + " ")
+        f = open('Record.txt', 'w')
+        f.write(str(0)+" "+str(DNNplayer)+" "+str(meanCorr)+" "+str(DNNmin)+" "+str(0) + " " + str(0) + " ")
         f.write(str(0)+" ") # overall visited states
         f.write(str(0)+" ") # visited states in the last G episodes
         f.write(str(0)+" ") # mean entropy in the last G episodes
         f.write(str(0)+" ") # cross entropy in the last G episodes
         f.write(str(0)+";\n") # number of states being evaluated in the latest G episodes
-    	f.close()
+        f.close()
 
     global worstMetric
     worstMetric = meanCorr
@@ -265,28 +267,28 @@ def main():
             print("Updated mean corr = ", updatedCorr)
 
             # ================================================================ store
-			if args.recordState == 1:
-            	f = open('Record.txt', 'a')
-            	f.write(str(episode)+" "+str(DNNplayer)+" "+str(updatedCorr)+" "+str(DNNmin)+" "+str(MCTSmin)+ " " + str(0)+ " ")
-                f.write(str(VisitedState.printCnt())+" ") # overall visited states
-                f.write(str(VisitedState.printCnt1())+" ") # visited states in the last G episodes
-                VisitedState.renew()
-                entropy, crossentropy, numStates = DNN.output_entropy()
-                f.write(str(entropy)+" ") # mean entropy in the last G episodes
-                f.write(str(crossentropy)+" ") # cross entropy in the last G episodes
-                f.write(str(numStates)+";\n") # number of states being evaluated in the latest G episodes
-                DNN.refresh_entropy()
-            	f.close()
+        if args.recordState == 1:
+            f = open('Record.txt', 'a')
+            f.write(str(episode)+" "+str(DNNplayer)+" "+str(updatedCorr)+" "+str(DNNmin)+" "+str(MCTSmin)+ " " + str(0)+ " ")
+            f.write(str(VisitedState.printCnt())+" ") # overall visited states
+            f.write(str(VisitedState.printCnt1())+" ") # visited states in the last G episodes
+            VisitedState.renew()
+            entropy, crossentropy, numStates = DNN.output_entropy()
+            f.write(str(entropy)+" ") # mean entropy in the last G episodes
+            f.write(str(crossentropy)+" ") # cross entropy in the last G episodes
+            f.write(str(numStates)+";\n") # number of states being evaluated in the latest G episodes
+            DNN.refresh_entropy()
+            f.close()
 
-            if args.recordState == 1:
-	            filename = "./bestParams" + str(episode) + "/net_params.ckpt"
-	            DNN.saveParams(filename)
+        if args.recordState == 1:
+            filename = "./bestParams" + str(episode) + "/net_params.ckpt"
+            DNN.saveParams(filename)
 
-	            filename1 = "States" + str(episode) + ".txt"
+            filename1 = "States" + str(episode) + ".txt"
 
-	            f = open(filename1, 'w')
-	            f.write(str(VisitedState.visitedState))
-	            f.close()
+            f = open(filename1, 'w')
+            f.write(str(VisitedState.visitedState))
+            f.close()
 
 
 
