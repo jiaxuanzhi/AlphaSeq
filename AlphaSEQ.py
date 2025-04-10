@@ -11,11 +11,11 @@ import pdb
 
 ##====## sequence parameters
 args = Dotdict({
-        'N': 12, # length of input image to DNN, i.e., N_prime in the paper
-        'K': 5, # width of input image to DNN, i.e., K_prime in the paper
+        'N': 120, # length of input image to DNN, i.e., N_prime in the paper
+        'K': 3, # width of input image to DNN, i.e., K_prime in the paper
         'lpos': 5, # number of positions filled in each time step
         'M': 3, # feature planes
-        'Q': 2, # 2 for binary sequence
+        'Q': 360, # 2 for binary sequence
         'lr': 0.0001, # learning rate
         'tau': 0.1, # temperature parameter for MCTS
         'alpha': 0.05, # exploration noise, i.e., \alpha in the paper
